@@ -28,13 +28,16 @@ To get either of these milters to work with Postfix, you need to add the
 sockets to your smtpd_milters line in main.cf. You also need to add the
 following:
 
+<pre>
 # Add client macros for logging
 milter_helo_macros = {tls_version} {cipher} {cipher_bits} {cert_subject} {cert_issuer} {client_addr} {client_name} {client_port}
+</pre>
 
 You'll also probably want to add this just in case things break (though is
 refusing mail worse than not spam-scanning or logging mail?)
 
+<pre>
 # Accept mail if SpamAssassin or Log Milter is broken
 milter_default_action = accept
-
+</pre>
 
