@@ -9,3 +9,6 @@ touchscreen/
 
 postfix/
  - A selection of useful milters and tools for postfix.
+
+bin/
+ - Useful shell/Perl scripts

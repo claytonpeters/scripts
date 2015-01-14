@@ -43,7 +43,7 @@ SCREEN_DEVICE="eDP1"
 UDEV_DELAY=4
 
 # LOG_LOCATION: Log things to a file
-LOG_LOCATION=/dev/null
+LOG_LOCATION=/var/log/conf-touchscreen.log
 
 ################################################################################
 # Code:
