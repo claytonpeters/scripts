@@ -1,0 +1,2 @@
+#!/bin/bash
+/bin/sort -k1M -k2n -k3

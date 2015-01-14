@@ -1,0 +1,181 @@
+#!/usr/bin/perl
+
+use Getopt::Long qw(:config gnu_compat bundling);
+use Pod::Usage;
+use warnings;
+use strict;
+
+my $VERSION = "0.1 (20150114)";
+
+my $field = " ";
+my $group_column = 0;
+my $column = 1;
+my $operation = "sum";
+my $help_flag = 0;
+my $version_flag = 0;
+
+GetOptions("field-separator|F=s" => \$field,
+           "group|g=i" => \$group_column,
+           "column|c=i" => \$column,
+           "operation|o=s" => \$operation,
+           "help|h" => \$help_flag,
+           "version|V" => \$version_flag) or pod2usage(2);
+
+pod2usage(1) if $help_flag;
+
+if ($version_flag)
+{
+	print STDERR "colcal $VERSION\n";
+	exit(1);
+}
+
+# Lower-case the operation
+$operation = lc($operation);
+
+if ($operation ne "sum" and $operation ne "max" and $operation ne "min" and $operation ne "count")
+{
+	print STDERR "Invalid operation specified\n";
+	pod2usage(2);
+}
+
+my $output_value;
+my $column_index = $column - 1;
+my %output_groups;
+
+# Read input files / stdin
+while (<>)
+{
+	my $this_output = \$output_value;
+	my $line = $_;
+	chomp($line);
+	my @columns = split(/$field/, $line);
+
+	if ($group_column != 0)
+	{
+		$this_output = \$output_groups{$columns[$group_column + 1]};
+	}
+
+	if ($operation eq "sum")
+	{
+		if (!defined($$this_output))
+		{
+			$$this_output = $columns[$column_index];
+		}
+		else
+		{
+			$$this_output = $$this_output + $columns[$column_index];
+		}
+	}
+	elsif ($operation eq "max")
+	{
+		if (!defined($$this_output))
+		{
+			$$this_output = $columns[$column_index];
+		}
+		elsif ($$this_output < $columns[$column_index])
+		{
+			$$this_output = $columns[$column_index];
+		}
+	}
+	elsif ($operation eq "min")
+	{
+		if (!defined($$this_output))
+		{
+			$$this_output = $columns[$column_index];
+		}
+		elsif ($$this_output > $columns[$column_index])
+		{
+			$$this_output = $columns[$column_index];
+		}
+	}
+	elsif ($operation eq "count")
+	{
+		if (!defined($$this_output))
+		{
+			$$this_output = 1;
+		}
+		else
+		{
+			$$this_output = $$this_output + 1;
+		}
+	}
+}
+
+if ($group_column == 0)
+{
+	print "$output_value\n";
+}
+else
+{
+	for my $key (keys %output_groups)
+	{
+		print $key . " " . $output_groups{$key} . "\n";
+	}
+}
+
+__END__
+
+=head1 NAME
+
+colcal - Perform an operation on column-based data
+
+=head1 SYNOPSIS
+
+colcal [options] [files...]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--field-separator,-F>
+
+Specifies the separator between fields/columns. Defaults to a space.
+
+=item B<--column,-c>
+
+Specifies the column to operate on. Defaults to column 1
+
+=item B<--group,-g>
+
+Groups data by a column, so operations are performed per group. Disabled by
+default
+
+=item B<--operation,-o>
+
+Specifies what operation to perform on the column given by -c. Can be one of:
+ - sum: Sums up the column
+ - min: Finds the minimum value in the column
+ - max: Finds the maximum value in the column
+ - count: Counts the number of row in a column. Mainly useful with -g. The -c
+   column choice becomes irrelevant.
+
+Defaults to 'sum'.
+
+=item B<--help,-h>
+
+Display this help message
+
+=head1 DESCRIPTION
+
+B<colcal> takes an input file or standard input and performs a mathematical
+operation on the data. When no options are specified, B<colcal> sums up the
+first column, where columns are separated by a space.
+
+=head1 EXAMPLES
+
+  colcal -F: -c3 /etc/passwd
+
+  Sums up all the user IDs (column three) in the /etc/passwd file, where the
+  columns in the file are separated by colons.
+
+  colcal -F, -g2 -c3 -o max
+
+  Takes comma-separated data, and finds the maximum value in column three for
+  each unique value specified in column two.
+
+  cat /etc/passwd | colcal -F: -g8, -o count
+  
+  Counts the number of user accounts that use each shell (column 8) in 
+  /etc/passwd. Note that -c is not necessary here as we're not doing anything
+  with the actual value in the column, just counting.
+=cut
