@@ -4,8 +4,11 @@ Postfix Milters
 The configuration for both of these milters is contained within the Perl. This
 does need to change to be in a config file instead.
 
-These scripts are in use in a production environment, and currently have one
-known caveat (which is a bug which needs fixing - see issues).
+These scripts are in use in a medium-scale production environment (and have 
+been for about10 months) and haven't hit any issues so far! One point to note
+is that is collating all the SQLite databases into a single database from
+postfix-log-milter, you'll need to make a joint primary key of id and hostname,
+as Postfix queue IDs can be duplicated across multiple hosts!
 
 postfix-log-milter.pl
 - Perhaps a bit of a misuse of a milter, this logs messages to a database once
