@@ -4,8 +4,8 @@ Postfix Milters
 The configuration for both of these milters is contained within the Perl. This
 does need to change to be in a config file instead.
 
-Note that these scripts haven't been tested in a production environment (yet),
-so YMMV.
+These scripts are in use in a production environment, and currently have one
+known caveat (which is a bug which needs fixing - see issues).
 
 postfix-log-milter.pl
 - Perhaps a bit of a misuse of a milter, this logs messages to a database once
